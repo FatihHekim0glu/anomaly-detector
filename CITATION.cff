@@ -1,0 +1,59 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "anomaly-detector: two independent unsupervised market-anomaly detectors under a strictly causal walk-forward refit"
+abstract: >-
+  A pure, typed Python library that flags anomalous trading days in liquid ETFs
+  with two genuinely independent unsupervised detectors — an Isolation Forest
+  (Liu, Ting & Zhou 2008) and a PCA reconstruction-error autoencoder (Sakurada &
+  Yairi 2014, no torch) — under a strictly causal walk-forward refit in which the
+  scaler, both models, and all thresholds are fitted on the TRAIN slice only and
+  score the disjoint out-of-sample slice. The headline is deliberately
+  DESCRIPTIVE: the detectors agree on a small core of known macro-stress dates,
+  but day-level agreement is modest (Jaccard ~0.5) and precision against a
+  transparent |z-return| > 3 proxy label is low. There is no ground-truth anomaly
+  label, so the flags are diagnostic, not tradable, and no alpha is claimed.
+type: software
+version: 0.1.0
+date-released: "2026-06-17"
+license: MIT
+repository-code: "https://github.com/FatihHekim0glu/anomaly-detector"
+url: "https://fatihhekimoglu.com"
+authors:
+  - family-names: "FatihHekim0glu"
+keywords:
+  - anomaly-detection
+  - unsupervised
+  - isolation-forest
+  - autoencoder
+  - market-stress
+  - quantitative-finance
+references:
+  - type: conference-paper
+    title: "Isolation Forest"
+    authors:
+      - family-names: "Liu"
+        given-names: "Fei Tony"
+      - family-names: "Ting"
+        given-names: "Kai Ming"
+      - family-names: "Zhou"
+        given-names: "Zhi-Hua"
+    collection-title: "2008 Eighth IEEE International Conference on Data Mining (ICDM)"
+    year: 2008
+  - type: conference-paper
+    title: "Anomaly Detection Using Autoencoders with Nonlinear Dimensionality Reduction"
+    authors:
+      - family-names: "Sakurada"
+        given-names: "Mayu"
+      - family-names: "Yairi"
+        given-names: "Takehisa"
+    collection-title: "Proceedings of the MLSDA 2014 2nd Workshop on Machine Learning for Sensory Data Analysis"
+    year: 2014
+  - type: article
+    title: "The Deflated Sharpe Ratio: Correcting for Selection Bias, Backtest Overfitting, and Non-Normality"
+    authors:
+      - family-names: "Bailey"
+        given-names: "David H."
+      - family-names: "Lopez de Prado"
+        given-names: "Marcos"
+    journal: "The Journal of Portfolio Management"
+    year: 2014
