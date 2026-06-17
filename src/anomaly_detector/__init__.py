@@ -65,6 +65,7 @@ from anomaly_detector.features.engineer import (
     engineer_features,
 )
 from anomaly_detector.plots import price_anomaly_figure, score_threshold_figure
+from anomaly_detector.scan import ScanResult, run_anomaly_scan
 
 __version__ = "0.1.0"
 
@@ -84,6 +85,7 @@ __all__ = [
     "OverlayResult",
     "PCAAutoencoderDetector",
     "RunManifest",
+    "ScanResult",
     "ValidationError",
     "__version__",
     "align_inner",
@@ -104,6 +106,7 @@ __all__ = [
     "probabilistic_sharpe_ratio",
     "proxy_precision_recall",
     "regime_alignment",
+    "run_anomaly_scan",
     "score_threshold_figure",
     "spawn_substreams",
     "validate_min_obs",

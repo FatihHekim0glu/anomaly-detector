@@ -148,7 +148,6 @@ disallow_untyped_defs = false
 module = [
     "scipy.*",
     "sklearn.*",
-    "diskcache.*",
     "plotly.*",
     "httpx.*",
     "typer.*",

@@ -20,6 +20,19 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
+def _iso(label: object) -> str:
+    """Render an index label as an ISO date string when possible, else ``str``.
+
+    Pandas ``Timestamp``/``datetime`` labels expose ``.isoformat``; everything
+    else (a positional int index, a plain string) falls back to ``str`` so the
+    dict keys are always JSON-safe regardless of how the OOS slice is indexed.
+    """
+    isoformat = getattr(label, "isoformat", None)
+    if callable(isoformat):
+        return str(isoformat())
+    return str(label)
+
+
 def _safe_float(value: object) -> float | None:
     """Coerce ``value`` to a finite float, mapping NaN/Inf/None to ``None``.
 
@@ -99,13 +112,17 @@ class AnomalyResult:
         dict[str, Any]
             A mapping with ``scores``, ``flags``, ``threshold``, ``detector``,
             ``contamination``, ``n_train``, ``n_test``, and ``meta`` keys.
-
-        Raises
-        ------
-        NotImplementedError
-            Always — this is a typed stub for parallel authoring.
         """
-        raise NotImplementedError
+        return {
+            "scores": {_iso(k): _safe_float(v) for k, v in self.scores.items()},
+            "flags": {_iso(k): bool(v) for k, v in self.flags.items()},
+            "threshold": _safe_float(self.threshold),
+            "detector": str(self.detector),
+            "contamination": _safe_float(self.contamination),
+            "n_train": int(self.n_train),
+            "n_test": int(self.n_test),
+            "meta": dict(self.meta),
+        }
 
     def flagged_dates(self) -> list[str]:
         """Return the ISO-formatted dates flagged anomalous, in score order.
@@ -115,10 +132,10 @@ class AnomalyResult:
         list[str]
             The OOS dates where ``flags`` is ``True``, sorted by descending
             anomaly score (most anomalous first).
-
-        Raises
-        ------
-        NotImplementedError
-            Always — this is a typed stub for parallel authoring.
         """
-        raise NotImplementedError
+        flagged = self.flags.fillna(False).astype(bool)
+        if not bool(flagged.any()):
+            return []
+        flagged_index = self.flags.index[flagged.to_numpy()]
+        ordered = self.scores.reindex(flagged_index).sort_values(ascending=False)
+        return [_iso(label) for label in ordered.index]
