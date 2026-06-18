@@ -176,9 +176,15 @@ markers = [
 [tool.coverage.run]
 branch = true
 source = ["anomaly_detector"]
+omit = [
+    # Network EOD provider: the live httpx fetch and retry/parse branches need a
+    # real Polygon endpoint to exercise, so they are out of scope for the unit
+    # gate. The synthetic data path is fully covered.
+    "*/data_providers/polygon.py",
+]
 
 [tool.coverage.report]
-fail_under = 85
+fail_under = 90
 show_missing = true
 exclude_lines = [
     "pragma: no cover",
