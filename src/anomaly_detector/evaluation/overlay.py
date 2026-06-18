@@ -3,7 +3,7 @@
 A deliberately simple, honest-null demonstration: on the day AFTER a detector
 flags an anomaly, take a small mean-reverting ("fade") position, hold one day,
 and measure the out-of-sample return. This is NOT a tradable strategy and makes
-NO alpha claim — it exists only to put a Deflated-Sharpe number on the question
+NO alpha claim - it exists only to put a Deflated-Sharpe number on the question
 "do the flags carry any next-day information?", with the multiple-testing
 penalty counting the FULL grid.
 
@@ -136,7 +136,7 @@ def fade_the_anomaly_overlay(
 
     # FADE signal, decided on the anomaly day t: bet AGAINST that day's move,
     # ``-sign(r_t)``, sized 1 unit, zero otherwise. The position is then SHIFTED
-    # by one row (``.shift(1)``) so it is earned on the NEXT day's return — no flag
+    # by one row (``.shift(1)``) so it is earned on the NEXT day's return - no flag
     # is ever acted on before it is known (the ``.shift(1)`` chokepoint).
     signal = (-np.sign(ret.to_numpy())) * flag_bool.to_numpy().astype("float64")
     signal_series = pd.Series(signal, index=ret.index, name="overlay_signal")
@@ -156,13 +156,13 @@ def fade_the_anomaly_overlay(
     n_trades = int((position != 0.0).sum())
     n_obs = int(net.shape[0])
 
-    # Descriptive (annualized) Sharpe — for the human-readable line only.
+    # Descriptive (annualized) Sharpe - for the human-readable line only.
     ann_sharpe = sharpe_ratio(net) if n_obs >= 2 else float("nan")
 
     # Deflated Sharpe needs the PER-OBSERVATION (non-annualized) Sharpe, the
     # higher moments, and a variance of trial Sharpes. With no realized grid of
     # trial Sharpes, V defaults to the asymptotic variance of the Sharpe estimator
-    # under the null (1 + 0.5 * SR^2) / (n - 1) — a documented, conservative plug.
+    # under the null (1 + 0.5 * SR^2) / (n - 1) - a documented, conservative plug.
     deflated = float("nan")
     per_obs_sharpe = float("nan")
     skew = 0.0

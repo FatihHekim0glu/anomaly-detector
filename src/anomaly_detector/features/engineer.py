@@ -9,13 +9,13 @@ leak information across gaps).
 
 Feature set (per day):
 
-- ``log_return``        — log of the gross return ``ln(p_t / p_{t-1})``.
-- ``realized_vol``      — rolling realized volatility of log-returns.
-- ``return_zscore``     — return standardized by its rolling mean/std.
-- ``range_atr``         — rolling average true range proxy (or |return| ATR).
-- ``volume_zscore``     — volume standardized by its rolling mean/std (0 if no
+- ``log_return``        - log of the gross return ``ln(p_t / p_{t-1})``.
+- ``realized_vol``      - rolling realized volatility of log-returns.
+- ``return_zscore``     - return standardized by its rolling mean/std.
+- ``range_atr``         - rolling average true range proxy (or |return| ATR).
+- ``volume_zscore``     - volume standardized by its rolling mean/std (0 if no
   volume supplied).
-- ``return_autocorr``   — short-lag rolling autocorrelation of returns.
+- ``return_autocorr``   - short-lag rolling autocorrelation of returns.
 
 NO-LOOKAHEAD REQUIREMENT: the rolling statistics that *standardize* day ``t``
 must exclude day ``t`` itself (a ``.shift(1)`` on the rolling mean/std), so the

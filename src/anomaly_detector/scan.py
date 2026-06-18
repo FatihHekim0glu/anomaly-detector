@@ -1,4 +1,4 @@
-"""Public anomaly-scan entrypoint — the single function the backend calls.
+"""Public anomaly-scan entrypoint - the single function the backend calls.
 
 :func:`run_anomaly_scan` is the library's one-call orchestration surface: given a
 price (or return) series it engineers causal features, runs a strictly causal
@@ -6,7 +6,7 @@ WALK-FORWARD refit of the two independent detectors (Isolation Forest + the
 PCA-reconstruction autoencoder), scores each disjoint out-of-sample fold, and
 assembles the honest DESCRIPTIVE summary the API marshals.
 
-WALK-FORWARD DISCIPLINE (the top project risk — full-sample leakage — is fenced
+WALK-FORWARD DISCIPLINE (the top project risk - full-sample leakage - is fenced
 off here): on every fold the StandardScaler, both detectors, and ALL thresholds
 are refitted on the TRAIN slice of that fold ONLY, then score the disjoint OOS
 fold. No detector ever sees a bar at or after the day it scores; the per-day
@@ -138,9 +138,9 @@ class ScanResult:
     def figures(self) -> dict[str, FigureDict]:
         """Assemble the two Plotly ``{data, layout}`` figures for the tool.
 
-        - ``price_figure`` — the OOS price path with markers on the (union of)
+        - ``price_figure`` - the OOS price path with markers on the (union of)
           flagged anomalous days.
-        - ``score_figure`` — the PRIMARY detector's OOS anomaly-score series with
+        - ``score_figure`` - the PRIMARY detector's OOS anomaly-score series with
           its train-derived threshold drawn as a horizontal line. For the
           ``"both"`` choice the Isolation Forest score series is shown (its
           threshold is in the same ``-score_samples`` units).
@@ -322,7 +322,7 @@ def run_anomaly_scan(
     flags_ae: list[pd.Series] = []
     n_train_total = 0
     # The final fold's train-derived thresholds back the score figure's reference
-    # line — the largest anchored train slice is the most representative cutoff.
+    # line - the largest anchored train slice is the most representative cutoff.
     last_threshold_if = 0.0
     last_threshold_ae = 0.0
 

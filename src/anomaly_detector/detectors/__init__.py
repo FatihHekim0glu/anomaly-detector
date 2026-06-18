@@ -2,9 +2,9 @@
 
 Two independent, leakage-safe detectors over a per-day feature matrix:
 
-- :class:`IsolationForestDetector` — an :mod:`sklearn` Isolation Forest
+- :class:`IsolationForestDetector` - an :mod:`sklearn` Isolation Forest
   (Liu, Ting & Zhou 2008); anomaly score ``= -score_samples``.
-- :class:`PCAAutoencoderDetector` — a PCA reconstruction-error autoencoder
+- :class:`PCAAutoencoderDetector` - a PCA reconstruction-error autoencoder
   (Sakurada & Yairi 2014); anomaly score ``= ||x - reconstruct(x)||^2``. No
   torch / tensorflow.
 

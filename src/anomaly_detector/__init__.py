@@ -1,8 +1,8 @@
-"""Market anomaly detector — a pure, typed compute library.
+"""Market anomaly detector - a pure, typed compute library.
 
 Flags anomalous trading days in a liquid ETF with two INDEPENDENT unsupervised
-detectors — an Isolation Forest (Liu, Ting & Zhou 2008) and a PCA
-reconstruction-error autoencoder (Sakurada & Yairi 2014, no torch) — under a
+detectors - an Isolation Forest (Liu, Ting & Zhou 2008) and a PCA
+reconstruction-error autoencoder (Sakurada & Yairi 2014, no torch) - under a
 strictly causal walk-forward refit. The scaler, both models, and ALL thresholds
 are fitted on the TRAIN slice only and then score the disjoint out-of-sample
 slice (full-sample-leakage guard; ``.shift(1)`` flag chokepoint).

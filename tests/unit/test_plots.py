@@ -2,7 +2,7 @@
 
 Asserts the two figure builders return valid ``{data, layout}`` mappings with
 finite, JSON-serializable contents, place markers at exactly the flagged indices,
-and draw the threshold line — and that importing :mod:`anomaly_detector.plots`
+and draw the threshold line - and that importing :mod:`anomaly_detector.plots`
 pulls in no Plotly at module-import time (lazy-import discipline).
 """
 

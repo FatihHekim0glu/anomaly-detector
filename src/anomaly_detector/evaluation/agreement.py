@@ -8,11 +8,11 @@ ground-truth anomaly label, so nothing here implies a tradable signal.
 Quantities computed
 -------------------
 - Jaccard / overlap between the two detectors' OOS flag sets (the primary
-  stability metric — expected to be MODEST, ~0.3-0.5).
+  stability metric - expected to be MODEST, ~0.3-0.5).
 - Regime alignment: overlap of each detector's flags with KNOWN stress windows
   (e.g. 2020-03, 2018-Q4, the 2022 selloff) or a VIX-spike proxy.
 - Precision / recall of the flags against a transparent proxy label
-  ``|causal z-return| > 3`` (expected LOW precision — flags are diagnostic).
+  ``|causal z-return| > 3`` (expected LOW precision - flags are diagnostic).
 
 Importing this module has no side effects.
 """

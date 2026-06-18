@@ -3,14 +3,14 @@
 Two responsibilities, both import-pure (heavy deps are imported lazily inside
 functions):
 
-1. :func:`generate_injected_series` — a deterministic, seeded base low-vol
+1. :func:`generate_injected_series` - a deterministic, seeded base low-vol
    return series with VOLATILITY BURSTS and JUMPS injected at KNOWN indices, so
    the detectors have a recoverable core to be tested against (with no network).
    The known injection indices are returned alongside the series so the
    regression suite can assert recovery without any ground-truth leakage into
    the detectors themselves.
 
-2. :func:`load_prices` — fetch real daily EOD closes for a single ticker via the
+2. :func:`load_prices` - fetch real daily EOD closes for a single ticker via the
    existing Polygon provider (reused from the HRP infra), degrading to the
    deterministic synthetic path on any upstream failure, and reporting which
    source was used (``"polygon"`` | ``"synthetic"``). Results are best-effort
@@ -378,7 +378,7 @@ def load_prices(
     """Load a single-ticker daily close series, degrading to synthetic.
 
     With ``source_pref="polygon"`` (or ``"auto"``) the real Polygon EOD provider
-    is tried first; on ANY failure — and always for ``"synthetic"`` — a
+    is tried first; on ANY failure - and always for ``"synthetic"`` - a
     deterministic synthetic price series (from :func:`generate_injected_series`)
     is returned. The second element reports which path was taken so the API can
     surface a ``data_source`` badge.
@@ -449,7 +449,7 @@ def compute_returns(prices: PricesLike) -> pd.Series:
     """Convert a price series to simple returns with no lookahead.
 
     NO-LOOKAHEAD REQUIREMENT: differenced with ``pct_change(fill_method=None)``
-    — prices are NEVER forward-filled before differencing (ffill-then-diff
+    - prices are NEVER forward-filled before differencing (ffill-then-diff
     manufactures spurious zero returns across gaps and leaks information). The
     leading NaN row is dropped.
 

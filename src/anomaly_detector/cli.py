@@ -204,7 +204,7 @@ def run(**kwargs: Any) -> int:
         print(f"top anomaly dates  : {top_dates}")
         print("-" * 40)
         print(
-            "Flags are diagnostic, not tradable — there is no ground-truth "
+            "Flags are diagnostic, not tradable - there is no ground-truth "
             "anomaly label, so no alpha is claimed."
         )
     except AnomalyDetectorError as exc:

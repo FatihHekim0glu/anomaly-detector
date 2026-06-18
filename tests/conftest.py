@@ -4,13 +4,13 @@ Every fixture is deterministic (driven by :func:`anomaly_detector._rng.make_rng`
 and returns pandas objects, so tests across the suite share identical synthetic
 data with known structure:
 
-- ``clean_series`` — a calm, low-volatility return/price series with NO injected
+- ``clean_series`` - a calm, low-volatility return/price series with NO injected
   anomalies (the well-behaved baseline; detectors should flag very little).
-- ``injected_anomalies`` — a base series with volatility bursts and discrete
+- ``injected_anomalies`` - a base series with volatility bursts and discrete
   jumps injected at KNOWN positional indices (exposed on the fixture object), so
   regression tests can assert detector recovery without leaking any label into
   the detectors.
-- ``pure_noise`` — an i.i.d. Gaussian return series with no temporal structure
+- ``pure_noise`` - an i.i.d. Gaussian return series with no temporal structure
   (the null: agreement between detectors should be near chance).
 
 Importing this module has no side effects beyond fixture registration.

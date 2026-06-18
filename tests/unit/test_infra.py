@@ -3,7 +3,7 @@
 These exercise the leakage-guarded walk-forward engine, the performance/cost
 helpers, the Probabilistic/Deflated Sharpe edge cases, the reproducibility
 manifest, the seeded RNG substreams, the validation guardrails, and the shared
-``AnomalyResult`` serialization — the infra the detectors and the scan stand on.
+``AnomalyResult`` serialization - the infra the detectors and the scan stand on.
 
 Everything is deterministic and network-free.
 """

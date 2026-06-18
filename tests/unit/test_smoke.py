@@ -2,8 +2,8 @@
 
 These run green on the scaffold (before any detector logic is implemented) so
 parallel authors start from a passing baseline. They assert structural
-invariants — that the package imports with no side effects, that the curated
-public API is exported, and that the frozen result dataclasses are slotted —
+invariants: that the package imports with no side effects, that the curated
+public API is exported, and that the frozen result dataclasses are slotted,
 without touching the NotImplementedError stubs.
 """
 

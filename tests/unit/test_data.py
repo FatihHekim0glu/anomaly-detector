@@ -490,7 +490,7 @@ def test_compute_returns_round_trips_synthetic_prices() -> None:
     """The synthetic injected prices differenced back match the source returns.
 
     ``prices = base * cumprod(1 + r)`` so ``pct_change`` recovers ``r`` exactly
-    (modulo the dropped leading observation) — a no-lookahead consistency check.
+    (modulo the dropped leading observation) - a no-lookahead consistency check.
     """
     s = generate_injected_series(n_obs=200, seed=5)
     recovered = compute_returns(s.prices)
