@@ -49,8 +49,7 @@ with a strictly causal walk-forward pipeline and an honest, descriptive headline
   omitted).
 - `docs/DESIGN.md` and ADRs 0001 to 0005 (train-only fit, PCA-AE-not-torch, the
   `.shift(1)` walk-forward chokepoint, the no-ground-truth descriptive framing,
-  and the transparent proxy label); `CITATION.cff`; a `no-ai-attribution` CI
-  guard rejecting AI co-author trailers.
+  and the transparent proxy label); `CITATION.cff`.
 
 ### Validation
 

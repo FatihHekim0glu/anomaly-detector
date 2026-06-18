@@ -135,8 +135,7 @@ The suite is partitioned by intent so each claim has a home:
 - **integration**: a full causal walk-forward scan on the synthetic fixture.
 
 Coverage gate **>= 90 %** on core logic (currently **about 97 %**, with the
-network EOD provider omitted); `ruff` and strict `mypy` clean; a
-`no-ai-attribution` CI guard rejects AI co-author trailers in the commit range.
+network EOD provider omitted); `ruff` and strict `mypy` clean.
 
 ## Honest-null discipline
 

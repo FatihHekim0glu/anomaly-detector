@@ -50,9 +50,7 @@ alpha/tradability is claimed. Keep the summary honest.
 ## Commit hygiene
 
 - Use clear, present-tense commit messages.
-- **Do not** add AI-attribution trailers: no `Co-Authored-By: Claude`,
-  no "Generated with Claude", no robot-emoji attribution lines. The
-  `.github/workflows/no-ai-attribution.yml` guard fails any PR that contains them.
+- Do not add co-author or generated-with trailers to commits or pull requests.
 
 ## Pull requests
 
