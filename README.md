@@ -1,16 +1,16 @@
 # anomaly-detector
 
 Flag anomalous trading days in liquid ETFs with **two independent unsupervised
-detectors** — an Isolation Forest (Liu, Ting & Zhou 2008) and a PCA
-reconstruction-error autoencoder (Sakurada & Yairi 2014, **no torch**) — under a
+detectors**, an Isolation Forest (Liu, Ting & Zhou 2008) and a PCA
+reconstruction-error autoencoder (Sakurada & Yairi 2014, **no torch**), under a
 strictly causal walk-forward refit.
 
 > **Honest headline.** Isolation Forest and the PCA-autoencoder agree on a small
 > core of known macro-stress dates (2020-03, 2018-Q4, the 2022 selloff), but
-> their day-level agreement is **modest** (Jaccard **≈ 0.50** on the seeded
+> their day-level agreement is **modest** (Jaccard **about 0.50** on the seeded
 > synthetic series at the default 2 % contamination) and precision against a
-> naive `|z-return| > 3` proxy label is **low** (**≈ 0.04**). Anomaly flags are
-> **diagnostic, not tradable** — there is **no ground-truth label**, so **no
+> naive `|z-return| > 3` proxy label is **low** (**about 0.04**). Anomaly flags
+> are **diagnostic, not tradable**. There is **no ground-truth label**, so **no
 > alpha is claimed**.
 
 ## What the numbers actually say
@@ -23,8 +23,8 @@ block at the bottom of this file.
 
 | Quantity | Value | Reading |
 | --- | --- | --- |
-| Jaccard agreement (IF ∩ AE / IF ∪ AE) | **0.50** | modest — the detectors share a core, not a signal |
-| Proxy precision vs `\|z-return\| > 3` | **0.04** | low — flags are diagnostic, not a clean predictor |
+| Jaccard agreement (IF ∩ AE / IF ∪ AE) | **0.50** | modest: the detectors share a core, not a signal |
+| Proxy precision vs `\|z-return\| > 3` | **0.04** | low: flags are diagnostic, not a clean predictor |
 | Proxy recall vs `\|z-return\| > 3` | **0.32** | the flags catch some, miss most, of the naive proxy |
 | Regime alignment (flags inside known stress windows) | **0.05** | the synthetic dates do not sit on real macro windows; on real ETF data this rises |
 | Isolation Forest flags | 95 | per-detector OOS flag count |
@@ -32,7 +32,7 @@ block at the bottom of this file.
 
 A Jaccard near **1.0** would mean the two detectors are redundant (a shared
 artifact); near **0.0** would mean they are unrelated noise. The measured
-**≈ 0.50** is exactly the honest middle: *agreement on a modest core*. The
+**0.50** is exactly the honest middle: *agreement on a modest core*. The
 regression suite pins this inside a documented `[0.20, 0.65]` band and caps proxy
 precision at `0.20`, so the summary can never silently drift into implying a
 tradable signal.
@@ -47,9 +47,9 @@ error cutoff) are fitted on the **TRAIN slice only**, then transform/score the
 **strictly before** that day (the `.shift(1)` chokepoint). Four Hypothesis
 property tests pin this:
 
-1. **future-perturbation invariance** — mutating bars after day `t` never
+1. **future-perturbation invariance**: mutating bars after day `t` never
    changes the score/flag at `t`;
-2. **prefix-determinism** — a prefix scores identically to the full series
+2. **prefix-determinism**: a prefix scores identically to the full series
    restricted to that prefix;
 3. **scale-invariance** of the z-features;
 4. **monotonicity** of the flag count in `contamination`.
@@ -86,23 +86,23 @@ print(result.summary())  # {n_flags, jaccard, proxy_precision, proxy_recall, ...
 
 ## How it works
 
-1. **Features** (`features/engineer.py`) — a causal per-day feature vector
+1. **Features** (`features/engineer.py`): a causal per-day feature vector
    (log-return, rolling realized vol, return z-score, range/ATR, volume z-score,
    short return-autocorrelation), all from `.shift(1)`-safe rolling windows and
    `pct_change(fill_method=None)`.
-2. **Detectors** (`detectors/`) — `IsolationForestDetector`
+2. **Detectors** (`detectors/`): `IsolationForestDetector`
    (score = `-score_samples`) and `PCAAutoencoderDetector`
    (score = reconstruction MSE), each fitted on TRAIN and scoring OOS, returning
    the shared frozen `AnomalyResult`.
-3. **Walk-forward** (`scan.py`) — an anchored/expanding walk-forward refits the
+3. **Walk-forward** (`scan.py`): an anchored/expanding walk-forward refits the
    scaler, both detectors, and all thresholds on each fold's TRAIN slice only and
    concatenates the disjoint OOS folds into a single zero-look-ahead score/flag
    series.
-4. **Evaluation** (`evaluation/`) — Jaccard/overlap agreement, regime alignment
+4. **Evaluation** (`evaluation/`): Jaccard/overlap agreement, regime overlap
    with known stress windows, precision/recall against the transparent
    `|z-return| > 3` proxy, and an optional, clearly-labeled-diagnostic
    fade-the-anomaly overlay with a Deflated Sharpe over the full grid
-   (`n_trials = #detectors × #contamination × #windows`).
+   (`n_trials = #detectors x #contamination x #windows`).
 
 ## Validation
 
@@ -115,12 +115,12 @@ oracle to a stated tolerance.
 | parity | raw `sklearn.decomposition.PCA.inverse_transform` reconstruction MSE | `atol=1e-10` | `tests/parity/test_autoencoder_parity.py`, `tests/parity/test_sklearn_parity.py` |
 | parity | train-error quantile flag threshold vs hand-computed quantile | `abs=1e-12` | `tests/parity/test_autoencoder_parity.py` |
 | property | future-perturbation invariance, prefix-determinism, z-feature scale-invariance, flag-count monotonicity in `contamination` | exact / `1e-12` | `tests/property/test_invariants.py`, `tests/property/test_feature_invariants.py` |
-| regression | golden injected-anomaly recovery — recall on injected days > calm-background false-positive rate (no lookahead) | strict `>` | `tests/regression/test_golden_anomalies.py` |
-| regression | honest-headline guard — Jaccard in `[0.20, 0.65]`, proxy precision ≤ `0.20` | banded | `tests/regression/test_honest_headline.py` |
+| regression | golden injected-anomaly recovery: recall on injected days > calm-background false-positive rate (no lookahead) | strict `>` | `tests/regression/test_golden_anomalies.py` |
+| regression | honest-headline guard: Jaccard in `[0.20, 0.65]`, proxy precision <= `0.20` | banded | `tests/regression/test_honest_headline.py` |
 | integration | full causal walk-forward scan on the synthetic fixture | end-to-end | `tests/integration/test_walk_forward_run.py` |
 
-192 tests pass; coverage **92.86 %** (gate **≥ 85 %**); `ruff` and strict `mypy`
-both clean.
+All tests pass; core-logic coverage **97 %** (gate **>= 90 %**, network provider
+omitted); `ruff` and strict `mypy` both clean.
 
 ## Limitations
 
@@ -134,16 +134,16 @@ both clean.
 - **Fixed, survivorship-aware ETF set.** The deployed tool fits at request time
   on a small set of long-lived, highly-liquid ETFs (e.g. SPY, QQQ, IWM). These
   instruments existed across the entire sample and were never delisted, so a
-  *fixed* universe carries **negligible survivorship bias** — there is no pool of
+  *fixed* universe carries **negligible survivorship bias**: there is no pool of
   dead tickers being silently excluded. A fixed set is therefore acceptable here
   precisely because the instruments are survivors by construction, not by
   selection; the same shortcut would be unsafe on single names.
 - **Modest agreement is expected, not a defect.** Two genuinely independent
   detectors *should* disagree on the margin; high agreement would be a red flag
   for a shared artifact, not a strength.
-- **Synthetic regime alignment is low.** The injected synthetic dates do not fall
+- **Synthetic regime overlap is low.** The injected synthetic dates do not fall
   inside the real-world stress windows used by `regime_alignment`, so that metric
-  reads low on the fixture; on real ETF data over 2018–2022 it rises as flags
+  reads low on the fixture; on real ETF data over 2018 to 2022 it rises as flags
   cluster on documented selloffs.
 
 ## References
@@ -153,7 +153,7 @@ both clean.
   Dimensionality Reduction.* MLSDA 2014.
 - D. H. Bailey, M. López de Prado. *The Deflated Sharpe Ratio: Correcting for
   Selection Bias, Backtest Overfitting, and Non-Normality.* The Journal of
-  Portfolio Management, 2014 — for the optional overlay's multiplicity-aware
+  Portfolio Management, 2014. Used for the optional overlay's multiplicity-aware
   yardstick.
 
 ## Reproduce
@@ -191,10 +191,10 @@ Full verification:
 
 ```bash
 uv run ruff check src tests
-uv run mypy
-uv run pytest -q --cov=anomaly_detector --cov-report=term-missing
+uv run mypy src
+uv run pytest -q -m "not integration" --cov=anomaly_detector --cov-report=term-missing
 ```
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

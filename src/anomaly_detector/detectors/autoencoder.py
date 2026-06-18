@@ -7,7 +7,7 @@ treats the per-day reconstruction error as the anomaly score::
     score(x) = || x - pca.inverse_transform(pca.transform(x)) ||^2
 
 A day reconstructs poorly (high score) when it lies off the principal subspace
-learned from the calm TRAIN data — i.e. it is anomalous. The flag threshold is a
+learned from the calm TRAIN data - i.e. it is anomalous. The flag threshold is a
 quantile of the TRAIN reconstruction errors. There is NO torch / tensorflow.
 
 FULL-SAMPLE-LEAKAGE GUARD: the scaler, the PCA basis, AND the error-quantile

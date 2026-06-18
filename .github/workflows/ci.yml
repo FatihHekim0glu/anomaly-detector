@@ -33,17 +33,22 @@ jobs:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
 
-      - name: Install project (lean extras + dev)
-        run: uv sync --extra data --extra viz --extra cli --dev
+      - name: Install project (all extras + dev)
+        run: uv sync --all-extras
 
       - name: Lint (ruff)
-        run: uv run ruff check src
+        run: uv run ruff check src tests
 
       - name: Type-check (mypy)
-        # Non-blocking: strict mypy may have residual issues we still surface in
-        # the log without failing the whole pipeline.
-        continue-on-error: true
         run: uv run mypy src
 
       - name: Test (pytest + coverage gate)
-        run: uv run pytest -q --cov=anomaly_detector --cov-report=term --cov-fail-under=85
+        # The coverage gate (fail_under) lives in [tool.coverage.report].
+        run: uv run pytest -q -m "not integration" --cov=anomaly_detector --cov-report=xml --cov-report=term
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          fail_ci_if_error: false

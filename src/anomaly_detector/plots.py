@@ -1,17 +1,17 @@
 """Plotly figure builders for the anomaly-detector tool.
 
 Each builder returns a plain ``dict`` shaped ``{"data": [...], "layout": {...}}``
-— the same JSON shape the FastAPI layer serializes and the Next.js
-``PlotlyChart`` component renders — so no Plotly object leaks across the API
+- the same JSON shape the FastAPI layer serializes and the Next.js
+``PlotlyChart`` component renders - so no Plotly object leaks across the API
 boundary. Plotly is an OPTIONAL dependency (the ``viz`` extra) imported LAZILY
 inside each builder; importing this module has no side effects and does not
 require Plotly.
 
 Two figures back the tool:
 
-- :func:`price_anomaly_figure` — the price (and/or return) series with markers on
+- :func:`price_anomaly_figure` - the price (and/or return) series with markers on
   the flagged anomalous days.
-- :func:`score_threshold_figure` — the per-day anomaly-score series with the
+- :func:`score_threshold_figure` - the per-day anomaly-score series with the
   train-derived threshold drawn as a horizontal line.
 
 Importing this module has no side effects.

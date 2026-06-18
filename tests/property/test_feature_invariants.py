@@ -2,16 +2,16 @@
 
 Covers the feature-layer half of the brief's leakage/correctness invariants:
 
-* **scale-invariance** — multiplying the whole price path by a positive constant
+* **scale-invariance** - multiplying the whole price path by a positive constant
   leaves the standardized / log-return-derived features unchanged (the prices
   cancel in every ratio/log).
-* **future-perturbation invariance** — mutating bars strictly after day ``t``
+* **future-perturbation invariance** - mutating bars strictly after day ``t``
   never changes the feature row AT ``t`` (the upstream no-lookahead guarantee of
   the ``.shift(1)`` chokepoint).
-* **no NaN leak past warm-up** — once the leading warm-up rows are dropped, the
+* **no NaN leak past warm-up** - once the leading warm-up rows are dropped, the
   returned matrix is finite everywhere (no lookahead row is silently emitted as
   NaN, and no real row is silently dropped).
-* **prefix-determinism (bonus)** — features on a prefix equal the full-series
+* **prefix-determinism (bonus)** - features on a prefix equal the full-series
   features restricted to that prefix; rolling+shift only ever look backward.
 
 These run on seeded synthetic Gaussian price paths so the suite is fully

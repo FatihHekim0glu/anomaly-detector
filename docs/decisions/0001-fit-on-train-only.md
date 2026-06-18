@@ -31,8 +31,8 @@ disjoint OOS slice.** Concretely, on each walk-forward fold:
   `-score_samples` of the already-fitted forest;
 - the PCA basis is `fit` on standardized TRAIN rows; the OOS score is the
   reconstruction MSE against the frozen basis;
-- **both flag thresholds** — the Isolation Forest's `1 - contamination` score
-  quantile and the autoencoder's train-error quantile — are computed from TRAIN
+- **both flag thresholds** (the Isolation Forest's `1 - contamination` score
+  quantile and the autoencoder's train-error quantile) are computed from TRAIN
   scores **only**, never from OOS or full-sample scores.
 
 No object is ever `fit` on a slice it will later score.
@@ -50,6 +50,6 @@ No object is ever `fit` on a slice it will later score.
   walk-forward fold refits from scratch. On a few-year daily ETF series this is
   cheap (sub-second), so there is no latency or pre-trained-artifact requirement
   for the deployed backend.
-- **Risk addressed.** "Fit on the full sample because it's one line shorter" — the
-  default that silently inflates every in-sample anomaly metric — is rejected and
+- **Risk addressed.** "Fit on the full sample because it's one line shorter", the
+  default that silently inflates every in-sample anomaly metric, is rejected and
   guarded against.

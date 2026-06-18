@@ -3,9 +3,9 @@ message: "If you use this software, please cite it as below."
 title: "anomaly-detector: two independent unsupervised market-anomaly detectors under a strictly causal walk-forward refit"
 abstract: >-
   A pure, typed Python library that flags anomalous trading days in liquid ETFs
-  with two genuinely independent unsupervised detectors — an Isolation Forest
+  with two genuinely independent unsupervised detectors, an Isolation Forest
   (Liu, Ting & Zhou 2008) and a PCA reconstruction-error autoencoder (Sakurada &
-  Yairi 2014, no torch) — under a strictly causal walk-forward refit in which the
+  Yairi 2014, no torch), under a strictly causal walk-forward refit in which the
   scaler, both models, and all thresholds are fitted on the TRAIN slice only and
   score the disjoint out-of-sample slice. The headline is deliberately
   DESCRIPTIVE: the detectors agree on a small core of known macro-stress dates,

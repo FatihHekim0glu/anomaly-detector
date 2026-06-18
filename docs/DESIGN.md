@@ -13,14 +13,14 @@ For *why* individual contested choices were made, see the numbered ADRs in
 - A pure, typed (`mypy --strict`, `py.typed`), side-effect-free compute core that
   can be audited line by line and vendored into a backend without dragging UI,
   network, or heavyweight ML dependencies along.
-- Two **genuinely independent** unsupervised detectors — an Isolation Forest and
-  a PCA reconstruction-error autoencoder — each parity-tested to `1e-10` against
+- Two **genuinely independent** unsupervised detectors, an Isolation Forest and
+  a PCA reconstruction-error autoencoder, each parity-tested to `1e-10` against
   an independent scikit-learn reference.
 - A **strictly causal** pipeline: the scaler, both detectors, and every threshold
   are fitted on the TRAIN slice only and score a disjoint future slice, so no day
   is flagged using information from its own future.
-- An honest, **descriptive** verdict — detector agreement and stability, not
-  Sharpe — that is *mechanically* prevented from over-claiming a tradable signal.
+- An honest, **descriptive** verdict (detector agreement and stability, not
+  Sharpe) that is *mechanically* prevented from over-claiming a tradable signal.
 
 **Non-goals**
 
@@ -71,7 +71,7 @@ the methods that need them).
 The same compute functions back the local CLI and the hosted FastAPI tool
 unchanged; the backend vendors `src/anomaly_detector/` byte-for-byte behind a
 `sys.path` shim and fits the detectors at request time (a few-year daily ETF
-series through IsolationForest + PCA is cheap — no pre-trained artifact, no
+series through IsolationForest + PCA is cheap, with no pre-trained artifact and no
 latency problem).
 
 ## Data flow through one causal fold
@@ -102,8 +102,8 @@ concatenates the disjoint OOS folds into one zero-look-ahead series.
 6. **Summarize descriptively** (`evaluation/agreement.compute_agreement`):
    Jaccard between the two OOS flag sets, precision/recall against the transparent
    `|z-return| > 3` proxy ([ADR-0005](decisions/0005-proxy-label.md)), and regime
-   alignment with known stress windows. The summary is JSON-safe (every scalar
-   through `_safe_float`, NaN/Inf → `None`).
+   overlap with known stress windows. The summary is JSON-safe (every scalar
+   through `_safe_float`, NaN/Inf coerced to `None`).
 
 ## Invariants the core guarantees
 
@@ -113,7 +113,7 @@ These are enforced by Hypothesis property tests, not just asserted in prose:
   change the feature vector, score, or flag at `t`. This is the operational
   definition of "no look-ahead".
 - **Prefix-determinism.** Scoring a prefix yields exactly the same values as
-  scoring the full series restricted to that prefix — there is no hidden global
+  scoring the full series restricted to that prefix. There is no hidden global
   state.
 - **Scale-invariance of the z-features.** Rescaling the input price/return series
   leaves the standardized features unchanged.
@@ -124,18 +124,18 @@ These are enforced by Hypothesis property tests, not just asserted in prose:
 
 The suite is partitioned by intent so each claim has a home:
 
-- **parity** — the two detectors reproduce raw scikit-learn references to
+- **parity**: the two detectors reproduce raw scikit-learn references to
   `1e-10` (`-score_samples` for the forest; `inverse_transform` reconstruction
   MSE for the PCA AE), and the AE flag threshold matches a hand-computed train
   quantile to `1e-12`.
-- **property** — the four invariants above (Hypothesis).
-- **regression** — golden injected-anomaly recovery (recall on injected days
+- **property**: the four invariants above (Hypothesis).
+- **regression**: golden injected-anomaly recovery (recall on injected days
   strictly exceeds the calm-background false-positive rate, no lookahead) and the
-  honest-headline guard (Jaccard in `[0.20, 0.65]`, proxy precision ≤ `0.20`).
-- **integration** — a full causal walk-forward scan on the synthetic fixture.
+  honest-headline guard (Jaccard in `[0.20, 0.65]`, proxy precision <= `0.20`).
+- **integration**: a full causal walk-forward scan on the synthetic fixture.
 
-Coverage gate **≥ 85 %** (currently **≈ 93 %**); `ruff` and strict `mypy` clean;
-a `no-ai-attribution` CI guard rejects AI co-author trailers in the commit range.
+Coverage gate **>= 90 %** on core logic (currently **about 97 %**, with the
+network EOD provider omitted); `ruff` and strict `mypy` clean.
 
 ## Honest-null discipline
 

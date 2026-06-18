@@ -20,12 +20,12 @@ pytestmark = pytest.mark.regression
 # Documented modest-Jaccard band from the build brief (~0.3-0.5 at the default
 # 2% contamination). A value INSIDE this band is the honest headline; a value
 # near 1.0 would imply the detectors are redundant, near 0.0 that they are
-# unrelated — both would undercut the "agree on a modest core" story.
+# unrelated - both would undercut the "agree on a modest core" story.
 _JACCARD_LOW = 0.20
 _JACCARD_HIGH = 0.65
 
 # The transparent |z-return| > 3 proxy is NOT a ground-truth label, so precision
-# against it must stay LOW — flags are diagnostic, not a clean predictor.
+# against it must stay LOW - flags are diagnostic, not a clean predictor.
 _PROXY_PRECISION_CEILING = 0.20
 
 
@@ -70,17 +70,17 @@ def test_honest_headline_modest_jaccard_low_precision(
     assert summary.n_flags_a > 0
     assert summary.n_flags_b > 0
 
-    # (2) Day-level agreement is MODEST — inside the documented band, neither
+    # (2) Day-level agreement is MODEST - inside the documented band, neither
     #     redundant (~1.0) nor unrelated (~0.0).
     assert _JACCARD_LOW <= summary.jaccard <= _JACCARD_HIGH, (
         f"Jaccard {summary.jaccard:.3f} escaped the honest modest band "
-        f"[{_JACCARD_LOW}, {_JACCARD_HIGH}] — the headline would mislead."
+        f"[{_JACCARD_LOW}, {_JACCARD_HIGH}] - the headline would mislead."
     )
 
-    # (3) Precision against the transparent proxy label is LOW — flags are
+    # (3) Precision against the transparent proxy label is LOW - flags are
     #     diagnostic, not a clean tradable predictor.
     assert summary.proxy_precision <= _PROXY_PRECISION_CEILING, (
-        f"proxy precision {summary.proxy_precision:.3f} is too high — the "
+        f"proxy precision {summary.proxy_precision:.3f} is too high - the "
         "summary would imply the flags cleanly predict the proxy."
     )
 

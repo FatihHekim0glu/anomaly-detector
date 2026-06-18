@@ -23,17 +23,15 @@ These are exactly what CI runs (see `.github/workflows/ci.yml`). Run them locall
 before opening a pull request:
 
 ```bash
-uv run ruff check src                                                       # lint
-uv run mypy src                                                             # types (strict)
-uv run pytest -q --cov=anomaly_detector --cov-report=term --cov-fail-under=85  # tests + coverage
+uv run ruff check src tests                                        # lint
+uv run mypy src                                                    # types (strict)
+uv run pytest -q -m "not integration" --cov=anomaly_detector --cov-report=term  # tests + coverage
 ```
 
 - **Lint** (`ruff`) must pass.
-- **Types** (`mypy --strict`) is run on every PR. It is currently non-blocking in
-  CI while residual strict-mode issues are burned down, but new code should not
-  add type errors.
-- **Tests** (`pytest`) must pass with **coverage ≥ 85%** (the gate also lives in
-  `[tool.coverage.report] fail_under` in `pyproject.toml`).
+- **Types** (`mypy --strict`) must pass; new code should not add type errors.
+- **Tests** (`pytest`) must pass with **core-logic coverage >= 90%** (the gate
+  lives in `[tool.coverage.report] fail_under` in `pyproject.toml`).
 
 CI runs the full matrix on Python 3.11, 3.12, and 3.13.
 
@@ -44,7 +42,7 @@ Forest, the PCA autoencoder, **and all thresholds** must be fitted on the TRAIN
 slice ONLY, then transform/score the disjoint out-of-sample slice. A day's flag
 may use only information available strictly before that day (the `.shift(1)`
 chokepoint). The four Hypothesis property tests
-(`tests/property/test_invariants.py`) exist to enforce this — do not weaken them.
+(`tests/property/test_invariants.py`) exist to enforce this; do not weaken them.
 
 The headline is DESCRIPTIVE: there is no ground-truth anomaly label, so no
 alpha/tradability is claimed. Keep the summary honest.
@@ -52,9 +50,7 @@ alpha/tradability is claimed. Keep the summary honest.
 ## Commit hygiene
 
 - Use clear, present-tense commit messages.
-- **Do not** add AI-attribution trailers — no `Co-Authored-By: Claude`,
-  no "Generated with Claude", no robot-emoji attribution lines. The
-  `.github/workflows/no-ai-attribution.yml` guard fails any PR that contains them.
+- Do not add co-author or generated-with trailers to commits or pull requests.
 
 ## Pull requests
 

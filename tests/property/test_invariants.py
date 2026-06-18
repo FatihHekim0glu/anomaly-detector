@@ -3,14 +3,14 @@
 The brief's four required invariants, asserted on the FULL pipeline (causal
 features -> fit-on-train -> score-OOS) rather than the feature layer alone:
 
-(a) future-perturbation invariance — mutating bars strictly after day ``t`` never
+(a) future-perturbation invariance - mutating bars strictly after day ``t`` never
     changes the OOS score/flag AT ``t`` (the core no-lookahead guarantee);
-(b) prefix-determinism — scoring a feature prefix yields the same per-day OOS
+(b) prefix-determinism - scoring a feature prefix yields the same per-day OOS
     scores as scoring the full series, restricted to that prefix;
-(c) scale-invariance of the z-features — multiplying the whole price path by a
+(c) scale-invariance of the z-features - multiplying the whole price path by a
     positive constant leaves the standardized features (and thus the detector's
     scores) unchanged;
-(d) monotonicity of flag count in ``contamination`` — a higher contamination
+(d) monotonicity of flag count in ``contamination`` - a higher contamination
     never yields fewer flags (fixed random_state).
 
 These run on seeded synthetic Gaussian price paths so the suite is fully

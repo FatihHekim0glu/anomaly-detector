@@ -2,9 +2,9 @@
 
 Pins behaviour on the fixed synthetic injected-anomaly series:
 
-- golden recovery — both detectors recover the KNOWN injected stress indices
+- golden recovery - both detectors recover the KNOWN injected stress indices
   (vol bursts / jumps) at a better-than-chance rate, with NO lookahead;
-- honest-headline guard — day-level agreement is MODEST and proxy precision is
+- honest-headline guard - day-level agreement is MODEST and proxy precision is
   LOW, so the summary can never imply a tradable signal.
 
 The detectors are fitted on the CALM front of the series (which contains no
@@ -28,7 +28,7 @@ _JACCARD_LOW = 0.20
 _JACCARD_HIGH = 0.65
 
 #: The transparent |z-return| > 3 proxy is NOT ground truth, so precision against
-#: it must stay LOW — flags are diagnostic, not a clean predictor.
+#: it must stay LOW - flags are diagnostic, not a clean predictor.
 _PROXY_PRECISION_CEILING = 0.20
 
 
@@ -105,7 +105,7 @@ def test_detectors_recover_known_injected_indices() -> None:
         assert recall_injected > fp_non_injected, (
             f"{detector_cls.__name__} recall on injected days "
             f"({recall_injected:.3f}) is no better than the calm-background "
-            f"false-positive rate ({fp_non_injected:.3f}) — no recovery."
+            f"false-positive rate ({fp_non_injected:.3f}) - no recovery."
         )
 
 
