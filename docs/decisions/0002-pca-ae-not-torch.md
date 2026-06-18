@@ -10,7 +10,7 @@
 
 The second detector is described as an "autoencoder" because it follows the
 Sakurada & Yairi (2014) recipe: learn a low-dimensional reconstruction of *calm*
-data, then treat **reconstruction error** as the anomaly score — a day that
+data, then treat **reconstruction error** as the anomaly score: a day that
 reconstructs poorly lies off the learned manifold and is anomalous. The obvious
 implementation is a small neural autoencoder in torch or tensorflow.
 
@@ -26,14 +26,14 @@ method captures just as well.
 **Implement the autoencoder as PCA reconstruction error** (`sklearn.decomposition.PCA`):
 
 ```
-score(x) = || x − pca.inverse_transform(pca.transform(x)) ||²
+score(x) = || x - pca.inverse_transform(pca.transform(x)) ||^2
 ```
 
 PCA *is* the optimal linear autoencoder (encoder = projection onto the top
 components, decoder = `inverse_transform`); the reconstruction-error semantics are
 identical to the neural recipe, the implementation is a few lines, and it is
 exactly reproducible. The flag threshold is a quantile of the TRAIN reconstruction
-errors (per [ADR-0001](0001-fit-on-train-only.md)). **No torch, no tensorflow** —
+errors (per [ADR-0001](0001-fit-on-train-only.md)). **No torch, no tensorflow**:
 not in the package, not in the `[data]`/`[viz]`/`[dev]` extras, not in the
 deployed backend container.
 
@@ -47,11 +47,11 @@ deployed backend container.
 - **Positive.** Fast enough to fit at request time, so the backend needs no
   pre-trained weights artifact.
 - **Cost.** The detector is **linear**: it cannot model nonlinear manifolds a
-  deep autoencoder might. This is acceptable here — the whole point is to pair a
+  deep autoencoder might. This is acceptable here: the whole point is to pair a
   *genuinely different* second detector with the tree-based Isolation Forest, and
   the modest, honest agreement between them is the headline, not raw detection
   power. If nonlinear reconstruction ever became necessary, a kernel PCA variant
   would be preferred over re-introducing torch.
-- **Risk addressed.** "Reach for a neural autoencoder by reflex" — dragging in a
-  GPU stack and non-determinism for no real gain on this feature set — is
+- **Risk addressed.** "Reach for a neural autoencoder by reflex", dragging in a
+  GPU stack and non-determinism for no real gain on this feature set, is
   rejected.
