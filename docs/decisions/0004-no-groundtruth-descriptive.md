@@ -33,9 +33,10 @@ reported quantities are agreement and stability, not predictive skill:
   the expected, honest outcome.
 
 The verdict/summary text must **never** imply a profitable or tradable signal.
-The flags are diagnostic. This is mechanically enforced: a regression guard pins
-Jaccard inside `[0.20, 0.65]` and caps proxy precision at `0.20`, so the summary
-cannot silently drift into "the flags cleanly predict the proxy".
+The flags are diagnostic. This is mechanically enforced: a regression guard runs
+the shipped causal walk-forward path and pins its Jaccard inside `[0.68, 0.78]`
+and caps proxy precision at `0.10`, so the summary cannot silently drift into
+"the flags cleanly predict the proxy".
 
 ## Consequences
 

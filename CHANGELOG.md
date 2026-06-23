@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Entrypoint parity.** The console-script `cli.run()` reimplemented a one-shot
+  60/40 simple train/test split, so the metrics a user saw disagreed with the
+  documented causal walk-forward claim used by the public API and the FastAPI
+  router. `cli.run()` now calls the public `run_anomaly_scan` walk-forward path;
+  the dead `_train_test_split_index` helper was removed.
+
+### Changed
+
+- Honest reconciliation of the measured headline: on the shipped walk-forward
+  path the Jaccard on the canonical seeded series
+  (`generate_injected_series(n_obs=1200, seed=7)`, defaults) is about **0.73**
+  (the retired simple-split reported about **0.50**); proxy precision stays low
+  at about **0.03**. The README headline, the "What the numbers actually say"
+  table, and the Reproduce block now report the walk-forward numbers.
+- Re-pinned the honest-headline regression guards (in
+  `tests/regression/test_honest_headline.py` and
+  `tests/regression/test_golden_anomalies.py`) to the shipped walk-forward path:
+  Jaccard in `[0.68, 0.78]`, proxy precision <= `0.10`. The load-bearing claim
+  (low proxy precision: flags are diagnostic, not tradable) is unchanged.
+
 ## [0.1.0] - 2026-06-17
 
 First public release: a pure, typed, import-pure market-anomaly compute library

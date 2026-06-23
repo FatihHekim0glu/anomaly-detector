@@ -5,37 +5,43 @@ detectors**, an Isolation Forest (Liu, Ting & Zhou 2008) and a PCA
 reconstruction-error autoencoder (Sakurada & Yairi 2014, **no torch**), under a
 strictly causal walk-forward refit.
 
-> **Honest headline.** Isolation Forest and the PCA-autoencoder agree on a small
-> core of known macro-stress dates (2020-03, 2018-Q4, the 2022 selloff), but
-> their day-level agreement is **modest** (Jaccard **about 0.50** on the seeded
-> synthetic series at the default 2 % contamination) and precision against a
-> naive `|z-return| > 3` proxy label is **low** (**about 0.04**). Anomaly flags
-> are **diagnostic, not tradable**. There is **no ground-truth label**, so **no
-> alpha is claimed**.
+> **Honest headline.** Isolation Forest and the PCA-autoencoder agree on a core
+> of known macro-stress dates (2020-03, 2018-Q4, the 2022 selloff). Under the
+> shipped causal **walk-forward** refit their day-level agreement is Jaccard
+> **about 0.73** on the seeded synthetic series at the default 2 % contamination,
+> while precision against a naive `|z-return| > 3` proxy label stays **low**
+> (**about 0.03**). The low proxy precision is the load-bearing claim: anomaly
+> flags are **diagnostic, not tradable**. There is **no ground-truth label**, so
+> **no alpha is claimed**.
 
 ## What the numbers actually say
 
 Every figure below is the **measured** output of the seeded synthetic
-anomaly-injected series (`generate_injected_series(n_obs=1200, seed=7)`),
-detectors fitted on the calm front and scoring the disjoint stress-back slice
-(the no-lookahead split the regression guard pins). Reproduce them with the
+anomaly-injected series (`generate_injected_series(n_obs=1200, seed=7)`) under
+the shipped causal **walk-forward** scan (`run_anomaly_scan`, default
+`n_folds=4`, `window=21`, `contamination=0.02`, `seed=7`) - the exact path the
+CLI, the public API, and the FastAPI router all use. Reproduce them with the
 block at the bottom of this file.
 
 | Quantity | Value | Reading |
 | --- | --- | --- |
-| Jaccard agreement (IF ∩ AE / IF ∪ AE) | **0.50** | modest: the detectors share a core, not a signal |
-| Proxy precision vs `\|z-return\| > 3` | **0.04** | low: flags are diagnostic, not a clean predictor |
-| Proxy recall vs `\|z-return\| > 3` | **0.32** | the flags catch some, miss most, of the naive proxy |
-| Regime alignment (flags inside known stress windows) | **0.05** | the synthetic dates do not sit on real macro windows; on real ETF data this rises |
-| Isolation Forest flags | 95 | per-detector OOS flag count |
-| PCA-autoencoder flags | 128 | per-detector OOS flag count |
+| Jaccard agreement (IF ∩ AE / IF ∪ AE) | **0.73** | the detectors share a core, not a signal |
+| Proxy precision vs `\|z-return\| > 3` | **0.03** | low: flags are diagnostic, not a clean predictor |
+| Proxy recall vs `\|z-return\| > 3` | **0.14** | the flags catch some, miss most, of the naive proxy |
+| Regime alignment (flags inside known stress windows) | **0.04** | the synthetic dates do not sit on real macro windows; on real ETF data this rises |
+| Isolation Forest flags | 71 | per-detector OOS flag count |
+| PCA-autoencoder flags | 64 | per-detector OOS flag count |
 
 A Jaccard near **1.0** would mean the two detectors are redundant (a shared
 artifact); near **0.0** would mean they are unrelated noise. The measured
-**0.50** is exactly the honest middle: *agreement on a modest core*. The
-regression suite pins this inside a documented `[0.20, 0.65]` band and caps proxy
-precision at `0.20`, so the summary can never silently drift into implying a
-tradable signal.
+**0.73** sits between: the two independent detectors *agree on a core* of stress
+days without collapsing into one signal. (The retired one-shot 60/40 simple-split
+the console script used to run reported a lower **0.50** on the same series; the
+walk-forward refit is the documented path, so its higher agreement is what is
+reported here - openly, not hidden.) The load-bearing honest claim is the **low
+proxy precision**: the regression suite pins Jaccard inside a tight `[0.68, 0.78]`
+band and caps proxy precision at `0.10`, so the summary can never silently drift
+into implying a tradable signal.
 
 ## Why it does not leak
 
@@ -116,7 +122,7 @@ oracle to a stated tolerance.
 | parity | train-error quantile flag threshold vs hand-computed quantile | `abs=1e-12` | `tests/parity/test_autoencoder_parity.py` |
 | property | future-perturbation invariance, prefix-determinism, z-feature scale-invariance, flag-count monotonicity in `contamination` | exact / `1e-12` | `tests/property/test_invariants.py`, `tests/property/test_feature_invariants.py` |
 | regression | golden injected-anomaly recovery: recall on injected days > calm-background false-positive rate (no lookahead) | strict `>` | `tests/regression/test_golden_anomalies.py` |
-| regression | honest-headline guard: Jaccard in `[0.20, 0.65]`, proxy precision <= `0.20` | banded | `tests/regression/test_honest_headline.py` |
+| regression | honest-headline guard (walk-forward path): Jaccard in `[0.68, 0.78]`, proxy precision <= `0.10` | banded | `tests/regression/test_honest_headline.py` |
 | integration | full causal walk-forward scan on the synthetic fixture | end-to-end | `tests/integration/test_walk_forward_run.py` |
 
 All tests pass; core-logic coverage **97 %** (gate **>= 90 %**, network provider
@@ -164,21 +170,13 @@ network):
 ```bash
 uv run python - <<'PY'
 from anomaly_detector.data import generate_injected_series
-from anomaly_detector.detectors.autoencoder import PCAAutoencoderDetector
-from anomaly_detector.detectors.iforest import IsolationForestDetector
-from anomaly_detector.evaluation.agreement import compute_agreement
-from anomaly_detector.features.engineer import engineer_features
+from anomaly_detector.scan import run_anomaly_scan
 
 inj = generate_injected_series(n_obs=1200, seed=7)
-feats = engineer_features(inj.prices, window=21)
-split = inj.prices.index[500]                       # calm-front / stress-back, no lookahead
-train = feats.loc[feats.index < split]
-test = feats.loc[feats.index >= split]
-roos = inj.returns.reindex(test.index)
-
-det_if = IsolationForestDetector(contamination=0.02, seed=7).fit(train)
-det_ae = PCAAutoencoderDetector(contamination=0.02, seed=7).fit(train)
-sm = compute_agreement(det_if.score(test), det_ae.score(test), roos, window=21)
+# The shipped causal walk-forward scan - the same path the CLI, the public API,
+# and the FastAPI router all use (anchored/expanding refit, no lookahead).
+scan = run_anomaly_scan(prices=inj.prices, detector="both", contamination=0.02, window=21, seed=7)
+sm = scan.agreement
 print(f"jaccard          {sm.jaccard:.2f}")
 print(f"proxy_precision  {sm.proxy_precision:.2f}")
 print(f"proxy_recall     {sm.proxy_recall:.2f}")

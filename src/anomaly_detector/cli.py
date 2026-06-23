@@ -1,11 +1,15 @@
 """Command-line interface (Typer).
 
 A thin orchestration layer over the compute library: load (or synthesize) a
-price series, engineer causal features, run the two detectors under a strictly
-causal train/OOS split, and print the descriptive agreement summary. Typer is
-imported lazily and the app is built inside :func:`build_app`, so importing this
-module has no side effects (no command registration or I/O at import time). The
-module-level :func:`app` is the console-script entry point.
+price series and hand it to the public :func:`anomaly_detector.scan.run_anomaly_scan`
+walk-forward entrypoint - the SAME causal walk-forward path the README headline,
+the public API, and the deployed FastAPI router all use - then print its
+descriptive agreement summary. Routing the console script through the public
+entrypoint keeps the tool a user runs and the documented walk-forward claim in
+lockstep (no divergent inline split). Typer is imported lazily and the app is
+built inside :func:`build_app`, so importing this module has no side effects (no
+command registration or I/O at import time). The module-level :func:`app` is the
+console-script entry point.
 
 Importing this module has no side effects.
 """
@@ -84,37 +88,19 @@ def build_app() -> typer.Typer:
     return cli
 
 
-def _train_test_split_index(n_obs: int, *, train_frac: float = 0.6) -> int:
-    """Return the positional cut index for an anchored causal train/OOS split.
-
-    The first ``train_frac`` of the (chronologically ordered) observations are the
-    TRAIN slice; the disjoint remainder is the OOS slice. At least one observation
-    is reserved for each side.
-
-    Parameters
-    ----------
-    n_obs:
-        Total number of feature rows.
-    train_frac:
-        Fraction of rows allocated to the train slice.
-
-    Returns
-    -------
-    int
-        The positional index where the OOS slice begins.
-    """
-    cut = int(n_obs * train_frac)
-    cut = max(1, min(cut, n_obs - 1))
-    return cut
-
-
 def run(**kwargs: Any) -> int:
     """Run the anomaly scan from the command line.
 
-    Orchestrates: load/synthesize prices -> compute returns -> engineer causal
-    features -> causal train/OOS split -> fit each detector on TRAIN, score the
-    disjoint OOS slice -> compute descriptive agreement (Jaccard, proxy
-    precision/recall, regime alignment) -> emit the honest summary.
+    Orchestrates: load/synthesize prices -> hand the price series to the public
+    :func:`anomaly_detector.scan.run_anomaly_scan` walk-forward entrypoint (which
+    engineers causal features and runs the anchored/expanding walk-forward refit
+    of both detectors, concatenating the disjoint OOS folds into a single
+    zero-look-ahead score/flag series) -> emit the honest descriptive summary.
+
+    Using the public entrypoint keeps the CLI on the EXACT causal walk-forward
+    path the README headline, the public API, and the deployed FastAPI router all
+    use, so the tool a user runs never disagrees with the documented walk-forward
+    claim.
 
     Parameters
     ----------
@@ -131,11 +117,8 @@ def run(**kwargs: Any) -> int:
     # Imports are local so importing this module stays side-effect free and the
     # heavy compute modules are only paid for at invocation time.
     from anomaly_detector._exceptions import AnomalyDetectorError
-    from anomaly_detector.data import compute_returns, load_prices
-    from anomaly_detector.detectors.autoencoder import PCAAutoencoderDetector
-    from anomaly_detector.detectors.iforest import IsolationForestDetector
-    from anomaly_detector.evaluation.agreement import compute_agreement
-    from anomaly_detector.features.engineer import engineer_features
+    from anomaly_detector.data import load_prices
+    from anomaly_detector.scan import run_anomaly_scan
 
     ticker: str = str(kwargs.get("ticker", "SPY"))
     start: date = kwargs["start"]
@@ -155,45 +138,33 @@ def run(**kwargs: Any) -> int:
             source_pref=data_source_pref,  # type: ignore[arg-type]
             seed=seed,
         )
-        returns = compute_returns(prices)
 
-        # --- Causal per-day features --------------------------------------
-        features = engineer_features(prices, window=window)
-        if features.shape[0] < 4:
-            from anomaly_detector._exceptions import InsufficientDataError
+        # --- Run the PUBLIC causal walk-forward scan ----------------------
+        # Both detectors are always fitted inside run_anomaly_scan regardless of
+        # the highlighted choice, so the descriptive Jaccard agreement (the
+        # headline) is always available.
+        scan = run_anomaly_scan(
+            prices=prices,
+            detector=detector,  # type: ignore[arg-type]
+            contamination=contamination,
+            window=window,
+            seed=seed,
+            data_source=data_source,
+        )
 
-            raise InsufficientDataError(
-                f"only {features.shape[0]} feature row(s) after warm-up; need at least 4."
-            )
-
-        # --- Anchored causal train/OOS split ------------------------------
-        cut = _train_test_split_index(features.shape[0])
-        train_features = features.iloc[:cut]
-        test_features = features.iloc[cut:]
-        oos_returns = returns.reindex(test_features.index)
-
-        # --- Fit each detector on TRAIN, score the disjoint OOS slice ------
-        # Both detectors are run regardless of the highlighted choice so the
-        # descriptive Jaccard agreement (the headline) is always available.
-        iforest = IsolationForestDetector(contamination=contamination, seed=seed)
-        result_if = iforest.fit(train_features).score(test_features)
-
-        pcae = PCAAutoencoderDetector(contamination=contamination, seed=seed)
-        result_ae = pcae.fit(train_features).score(test_features)
-
-        agreement = compute_agreement(result_if, result_ae, oos_returns, window=window)
+        result_if = scan.result_iforest
+        result_ae = scan.result_autoencoder
+        agreement = scan.agreement
+        summary = scan.summary()
 
         # --- Emit the honest, descriptive summary -------------------------
-        primary = result_ae if detector == "autoencoder" else result_if
-        n_flags = int(primary.flags.sum())
-
         print("Market anomaly scan")
         print("=" * 40)
         print(f"ticker             : {ticker}")
         print(f"data source        : {data_source}")
         print(f"detector           : {detector}")
         print(f"OOS observations   : {result_if.n_test}")
-        print(f"primary flags      : {n_flags}")
+        print(f"primary flags      : {int(summary['n_flags'])}")
         print(f"iforest flags      : {int(result_if.flags.sum())}")
         print(f"autoencoder flags  : {int(result_ae.flags.sum())}")
         print(f"Jaccard agreement  : {agreement.jaccard:.4f}")

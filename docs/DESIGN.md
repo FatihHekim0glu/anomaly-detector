@@ -131,7 +131,8 @@ The suite is partitioned by intent so each claim has a home:
 - **property**: the four invariants above (Hypothesis).
 - **regression**: golden injected-anomaly recovery (recall on injected days
   strictly exceeds the calm-background false-positive rate, no lookahead) and the
-  honest-headline guard (Jaccard in `[0.20, 0.65]`, proxy precision <= `0.20`).
+  honest-headline guard on the shipped walk-forward path (Jaccard in
+  `[0.68, 0.78]`, proxy precision <= `0.10`).
 - **integration**: a full causal walk-forward scan on the synthetic fixture.
 
 Coverage gate **>= 90 %** on core logic (currently **about 97 %**, with the

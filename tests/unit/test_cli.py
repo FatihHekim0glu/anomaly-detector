@@ -14,7 +14,6 @@ from typer.testing import CliRunner
 
 from anomaly_detector.cli import (
     _demo_defaults,
-    _train_test_split_index,
     app,
     build_app,
     run,
@@ -78,17 +77,33 @@ def test_demo_defaults_are_offline_and_complete() -> None:
 
 
 @pytest.mark.unit
-@pytest.mark.parametrize(
-    ("n_obs", "expected_min", "expected_max"),
-    [(10, 1, 9), (2, 1, 1), (100, 1, 99)],
-)
-def test_train_test_split_reserves_both_sides(
-    n_obs: int, expected_min: int, expected_max: int
+def test_run_uses_public_walk_forward_entrypoint(
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """The causal split always leaves at least one obs on each side."""
-    cut = _train_test_split_index(n_obs)
-    assert expected_min <= cut <= expected_max
-    assert 1 <= cut < n_obs
+    """``run`` routes through the public ``run_anomaly_scan`` walk-forward path.
+
+    The console script must NOT reimplement its own split; it must call the same
+    public causal walk-forward entrypoint the README, the public API, and the
+    FastAPI router use, so the tool a user runs matches the documented claim.
+    """
+    import anomaly_detector.scan as scan_module
+
+    called: dict[str, object] = {}
+    real_run_anomaly_scan = scan_module.run_anomaly_scan
+
+    def _spy(*args: object, **kwargs: object) -> object:
+        called["hit"] = True
+        called["kwargs"] = dict(kwargs)
+        return real_run_anomaly_scan(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(scan_module, "run_anomaly_scan", _spy)
+
+    code = run(**_demo_defaults())
+    assert code == 0
+    assert called.get("hit") is True, "cli.run must call the public run_anomaly_scan"
+    # The walk-forward meta must flow through (proof it is the walk-forward path).
+    out = capsys.readouterr().out
+    assert "Jaccard agreement" in out
 
 
 @pytest.mark.unit
